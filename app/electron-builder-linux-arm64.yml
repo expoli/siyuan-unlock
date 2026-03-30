@@ -16,13 +16,63 @@ extraFiles:
 
 linux:
   icon: "src/assets/icon.icns"
-  category: "Utility"
+  category: "Office"
   executableName: "siyuan"
+
+  # Package metadata
+  maintainer: "expoli <31023767+expoli@users.noreply.github.com>"
+  homepage: "https://github.com/appdev/siyuan-unlock"
+  synopsis: "Privacy-first personal knowledge management system"
+  description: |
+    SiYuan Note is a privacy-first personal knowledge management system with
+    block-level references and Markdown WYSIWYG. This is the unlock version
+    with additional features enabled.
+
+    Features:
+    - Block-level references and bidirectional links
+    - Markdown WYSIWYG editing
+    - Local-first with end-to-end encryption
+    - Cross-platform support
+    - Plugin and theme marketplace
+
+  keywords: ["note-taking", "knowledge-management", "markdown", "productivity"]
+
+  # Runtime dependencies (standard Electron dependencies)
+  depends: [
+    "libgtk-3-0 (>= 3.10)",
+    "libnotify4 (>= 0.7)",
+    "libnss3 (>= 3.26)",
+    "libxss1",
+    "libxtst6",
+    "xdg-utils",
+    "libatspi2.0-0 (>= 2.9.90)",
+    "libuuid1",
+    "libsecret-1-0",
+    "libgbm1"
+  ]
+
+  # File associations and MIME types
+  fileAssociations:
+    - ext: "sy"
+      name: "SiYuan Workspace"
+      description: "SiYuan Note Workspace"
+      mimeType: "application/x-siyuan-workspace"
+      role: "Editor"
+
+  mimeTypes:
+    - "application/x-siyuan-workspace"
+
   desktop: {
-    "Name": "SiYuan",
-    "Comment": "Refactor your thinking",
+    "Name": "SiYuan Note",
+    "Comment": "Privacy-first personal knowledge management system",
+    "GenericName": "Note Taking Application",
     "Type": "Application",
-    "Categories": "Utility;"
+    "Categories": "Office;Utility;TextEditor;",
+    "Keywords": "note;knowledge;markdown;productivity;writing;editor;",
+    "StartupNotify": "true",
+    "StartupWMClass": "siyuan",
+    "DBusActivatable": "false",
+    "Terminal": "false"
   }
   extraResources:
     - from: "kernel-linux-arm64"
