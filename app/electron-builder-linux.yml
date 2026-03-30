@@ -16,8 +16,41 @@ extraFiles:
 
 linux:
   icon: "src/assets/icon.icns"
-  category: "Utility"
+  category: "Office"
   executableName: "siyuan"
+
+  # Package metadata
+  maintainer: "expoli <31023767+expoli@users.noreply.github.com>"
+  homepage: "https://github.com/appdev/siyuan-unlock"
+  synopsis: "Privacy-first personal knowledge management system"
+  description: |
+    SiYuan Note is a privacy-first personal knowledge management system with
+    block-level references and Markdown WYSIWYG. This is the unlock version
+    with additional features enabled.
+
+    Features:
+    - Block-level references and bidirectional links
+    - Markdown WYSIWYG editing
+    - Local-first with end-to-end encryption
+    - Cross-platform support
+    - Plugin and theme marketplace
+
+  keywords: ["note-taking", "knowledge-management", "markdown", "productivity"]
+
+  # Runtime dependencies (standard Electron dependencies)
+  depends: [
+    "libgtk-3-0 (>= 3.10)",
+    "libnotify4 (>= 0.7)",
+    "libnss3 (>= 3.26)",
+    "libxss1",
+    "libxtst6",
+    "xdg-utils",
+    "libatspi2.0-0 (>= 2.9.90)",
+    "libuuid1",
+    "libsecret-1-0",
+    "libgbm1"
+  ]
+
   desktop: {
     "Name": "SiYuan",
     "Comment": "Refactor your thinking",
