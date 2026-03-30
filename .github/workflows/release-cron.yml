@@ -9,7 +9,7 @@ jobs:
   create_release:
     name: get version and create release
     runs-on: ubuntu-latest
-    if: github.repository == 'appdev/siyuan-unlock'
+    if: github.repository == 'expoli/siyuan-unlock'
     steps:
       - name: version check
         id: version
