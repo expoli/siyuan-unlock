@@ -63,10 +63,16 @@ linux:
     - "application/x-siyuan-workspace"
 
   desktop: {
-    "Name": "SiYuan",
-    "Comment": "Refactor your thinking",
+    "Name": "SiYuan Note",
+    "Comment": "Privacy-first personal knowledge management system",
+    "GenericName": "Note Taking Application",
     "Type": "Application",
-    "Categories": "Utility;"
+    "Categories": "Office;Utility;TextEditor;",
+    "Keywords": "note;knowledge;markdown;productivity;writing;editor;",
+    "StartupNotify": "true",
+    "StartupWMClass": "siyuan",
+    "DBusActivatable": "false",
+    "Terminal": "false"
   }
   extraResources:
     - from: "kernel-linux"
