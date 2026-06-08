@@ -40,6 +40,22 @@ jobs:
             goarch: "arm64"
             cc_path: "aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
             suffix: "linux-arm64.tar.gz"
+          - os: ubuntu-22.04
+            kernel_path: "../app/kernel-linux/SiYuan-Kernel"
+            build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            electron_args: "dist-linux"
+            goos: "linux"
+            goarch: "amd64"
+            cc_path: "x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc"
+            suffix: "linux.deb"
+          - os: ubuntu-22.04
+            kernel_path: "../app/kernel-linux-arm64/SiYuan-Kernel"
+            build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            electron_args: "dist-linux-arm64"
+            goos: "linux"
+            goarch: "arm64"
+            cc_path: "aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
+            suffix: "linux-arm64.deb"
           - os: macos-latest
             kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
             build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
