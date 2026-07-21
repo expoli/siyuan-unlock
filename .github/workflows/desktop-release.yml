@@ -86,17 +86,25 @@ jobs:
           path: siyuan-note
 
       - name: clone origin and apply patches
+        shell: bash
         run: |
-          mkdir -p ${{ github.workspace }}/go
-          cd ${{ github.workspace }}/siyuan-note/
+          set -euo pipefail
 
-          git clone --branch ${{ github.event.inputs.version }} --depth=1 https://github.com/siyuan-note/siyuan.git
+          workspace="${{ github.workspace }}"
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            workspace="$(cygpath -u "${workspace}")"
+          fi
+
+          mkdir -p "${workspace}/go"
+          cd "${workspace}/siyuan-note/"
+
+          git clone --branch "${{ github.event.inputs.version }}" --depth=1 https://github.com/siyuan-note/siyuan.git
           cd siyuan
 
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/disable-update.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/default-config.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/mock-vip-user.patch
-          git apply ${{ github.workspace }}/siyuan-note/patches/siyuan/hide-account-entry.patch
+          git apply "${workspace}/siyuan-note/patches/siyuan/disable-update.patch"
+          git apply "${workspace}/siyuan-note/patches/siyuan/default-config.patch"
+          git apply "${workspace}/siyuan-note/patches/siyuan/mock-vip-user.patch"
+          git apply "${workspace}/siyuan-note/patches/siyuan/hide-account-entry.patch"
 
           git status
 
@@ -145,7 +153,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Node pnpm
         run: npm install -g ${{ github.event.inputs.packageManager }}
@@ -181,7 +189,7 @@ jobs:
           GOOS: ${{ matrix.config.goos }}
           GOPATH: ${{ github.workspace }}/go
           GOARCH: ${{ matrix.config.goarch }}
-          GOPROXY: https://mirrors.aliyun.com/goproxy/
+          GOPROXY: https://proxy.golang.org,direct
           CC: ${{ runner.os == 'Linux' && format('/usr/local/musl/{0}', matrix.config.cc_path) || '' }}
 
       - name: Building Electron
@@ -207,4 +215,4 @@ jobs:
           omitBody: true
           omitName: true
           tag: ${{ github.event.inputs.version }}
-          replacesArtifacts: false
+          replacesArtifacts: true
