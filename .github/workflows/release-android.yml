@@ -45,6 +45,7 @@ jobs:
           cd siyuan-android
 
           git apply --ignore-whitespace --verbose ${{ github.workspace }}/siyuan-note/patches/siyuan-android/debug-build.patch
+          git apply --ignore-whitespace --verbose ${{ github.workspace }}/siyuan-note/patches/siyuan-android/fix-maven-repos.patch
 
           mkdir -p app/src/main/assets/
           mkdir -p app/libs/

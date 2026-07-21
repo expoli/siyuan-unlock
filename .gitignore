@@ -41,5 +41,10 @@ lerna-debug.log*
 package-lock.json
 yarn.lock
 
+# Android keystore
+*.jks
+*.keystore
+keystore/
+
 # Workflows
 **/__pycache__

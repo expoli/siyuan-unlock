@@ -1,0 +1,23 @@
+diff --git a/build.gradle b/build.gradle
+index e0ec580..93c1c43 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -8,9 +8,6 @@ buildscript {
+         siyuanVersionName = "3.7.3"
+     }
+     repositories {
+-        maven { url 'https://maven.aliyun.com/repository/google' }
+-        maven { url 'https://maven.aliyun.com/repository/public' }
+-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+         google()
+         mavenCentral()
+     }
+@@ -24,8 +21,6 @@ dependencies {
+
+ allprojects {
+     repositories {
+-        maven { url 'https://maven.aliyun.com/repository/google' }
+-        maven { url 'https://maven.aliyun.com/repository/public' }
+         google()
+         mavenCentral()
+         maven { url 'https://jitpack.io' }
