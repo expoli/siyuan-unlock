@@ -46,16 +46,16 @@ Download the appropriate .deb package for your architecture:
 
 ```bash
 # amd64 (most common)
-wget https://github.com/appdev/siyuan-unlock/releases/download/{version}/siyuan-unlock-{version}-linux.deb
+wget https://github.com/appdev/siyuan-unlock/releases/download/{version}/siyuan-{version}-linux.deb
 
 # arm64 (ARM processors)
-wget https://github.com/appdev/siyuan-unlock/releases/download/{version}/siyuan-unlock-{version}-linux-arm64.deb
+wget https://github.com/appdev/siyuan-unlock/releases/download/{version}/siyuan-{version}-linux-arm64.deb
 ```
 
 ### Install
 
 ```bash
-sudo dpkg -i siyuan-unlock-*.deb
+sudo dpkg -i siyuan-*.deb
 sudo apt install -f  # Install dependencies
 ```
 
@@ -101,19 +101,19 @@ GitHub Actions automatically builds and uploads .deb packages to releases:
 ### Inspect Package Metadata
 
 ```bash
-dpkg-deb -I siyuan-unlock-*-linux.deb
+dpkg-deb -I siyuan-*-linux.deb
 ```
 
 ### List Package Contents
 
 ```bash
-dpkg-deb -c siyuan-unlock-*-linux.deb
+dpkg-deb -c siyuan-*-linux.deb
 ```
 
 ### Check Desktop Entry
 
 ```bash
-dpkg-deb -c siyuan-unlock-*-linux.deb | grep .desktop
+dpkg-deb -c siyuan-*-linux.deb | grep .desktop
 ```
 
 ## Configuration Files
@@ -148,13 +148,13 @@ Reinstall package:
 
 ```bash
 sudo dpkg --remove siyuan
-sudo dpkg -i siyuan-unlock-*.deb
+sudo dpkg -i siyuan-*.deb
 ```
 
 ## Testing
 
 For comprehensive testing instructions, see:
-- `docs/superpowers/specs/2026-03-30-deb-package-generation-design.md`
+- `docs/superpowers/plans/2026-03-30-deb-package-enhancement.md`
 
 ## References
 

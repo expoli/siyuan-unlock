@@ -45,20 +45,24 @@ jobs:
             suffix: "linux-arm64.tar.gz"
           - os: ubuntu-22.04
             kernel_path: "../app/kernel-linux/SiYuan-Kernel"
-            build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            build_mode: "-buildmode=pie"
+            build_args: "-s -w -extldflags -static-pie -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
             electron_args: "dist-linux"
             goos: "linux"
             goarch: "amd64"
             cc_path: "x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc"
             suffix: "linux.deb"
+            deb_config: "electron-builder-linux.yml"
           - os: ubuntu-22.04
             kernel_path: "../app/kernel-linux-arm64/SiYuan-Kernel"
-            build_args: "-s -w -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
+            build_mode: "-buildmode=pie"
+            build_args: "-s -w -extldflags -static-pie -X github.com/siyuan-note/siyuan/kernel/util.Mode=prod"
             electron_args: "dist-linux-arm64"
             goos: "linux"
             goarch: "arm64"
             cc_path: "aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
             suffix: "linux-arm64.deb"
+            deb_config: "electron-builder-linux-arm64.yml"
           - os: macos-latest
             kernel_path: "../app/kernel-darwin/SiYuan-Kernel"
             build_mode: ""
@@ -235,9 +239,25 @@ jobs:
           grep -F $'build\t-buildmode=pie' <<<"${build_info}"
           grep -F -- '-extldflags -static-pie' <<<"${build_info}"
 
+      - name: Apply SiYuan Unlock electron-builder config for deb
+        if: contains(matrix.config.suffix, '.deb')
+        shell: bash
+        working-directory: ${{ github.workspace }}/siyuan-note
+        run: |
+          set -euo pipefail
+          cp "app/${{ matrix.config.deb_config }}" "siyuan/app/${{ matrix.config.deb_config }}"
+
       - name: Building Electron
-        run: pnpm run ${{ matrix.config.electron_args }}
+        run: |
+          set -euo pipefail
+          if [ -n "${{ matrix.config.deb_config }}" ]; then
+            pnpm exec electron-builder --linux deb ${{ matrix.config.goarch == 'arm64' && '--arm64' || '' }} --config ${{ matrix.config.deb_config }} --publish=never
+          else
+            pnpm run ${{ matrix.config.electron_args }}
+          fi
         working-directory: ${{ github.workspace }}/siyuan-note/siyuan/app
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
 
       - uses: joutvhu/get-release@v1
         id: get_current_release
