@@ -43,3 +43,6 @@ yarn.lock
 
 # Workflows
 **/__pycache__
+
+# Signing keystore (use CI secrets instead)
+*.jks
