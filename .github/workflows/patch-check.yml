@@ -1,0 +1,137 @@
+name: patch-check
+
+# 目的：把「patch 对不上新版源码」这类失败在 release 之前暴露，而不是发版时才炸。
+#
+# 做法：不另抄一份 patch 顺序，而是把三个 release workflow 里
+# "clone origin and apply patches" 步骤的脚本原样抽出来重放。
+# 预检与发版共用同一份逻辑，release workflow 改了这里自动跟着改（零漂移）。
+#
+# 触发：手动（可指定版本）/ 每天 06:00 UTC（早于 release-cron 的周二、周五 12:00 UTC）/ patches 或相关 workflow 变更。
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "要校验的版本 tag，例如 v3.8.3（留空 = 自动取 siyuan 最新 release）"
+        required: false
+  schedule:
+    - cron: "0 6 * * *"
+  push:
+    paths:
+      - "patches/**"
+      - ".github/workflows/patch-check.yml"
+      - ".github/workflows/desktop-release.yml"
+      - ".github/workflows/release-android.yml"
+      - ".github/workflows/release-ios.yml"
+
+jobs:
+  resolve:
+    name: resolve target version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: resolve version
+        id: resolve
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          version="${INPUT_VERSION:-}"
+          if [ -z "${version}" ]; then
+            version="$(curl -fsSL -H 'Accept: application/vnd.github+json' \
+              https://api.github.com/repos/siyuan-note/siyuan/releases/latest \
+              | grep -m1 '"tag_name"' | cut -d '"' -f4)"
+          fi
+          case "${version}" in
+            v[0-9]*) ;;
+            *) echo "::error::无法解析目标版本（得到 '${version}'）"; exit 1 ;;
+          esac
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "target version: ${version}"
+
+  replay:
+    name: replay ${{ matrix.workflow }}
+    needs: resolve
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # release-ios 的步骤里有 BSD 风格的 sed -i ''，只能在 macOS 上重放
+          - workflow: desktop-release
+            os: ubuntu-22.04
+          - workflow: release-android
+            os: ubuntu-22.04
+          - workflow: release-ios
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: siyuan-note
+
+      - name: replay patch step from ${{ matrix.workflow }}.yml
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          WF: ${{ matrix.workflow }}
+        run: |
+          set -euo pipefail
+
+          wf_file="${GITHUB_WORKSPACE}/siyuan-note/.github/workflows/${WF}.yml"
+          script="${GITHUB_WORKSPACE}/replayed-${WF}.sh"
+
+          # 抽出 "clone origin and apply patches" 步骤里的 run 脚本（去掉 YAML 缩进）
+          awk '
+            /^      - name: clone origin and apply patches$/ {in_step=1; next}
+            in_step && /^      - (name:|uses:)/ {exit}
+            in_step && /^        run: \|$/ {in_run=1; next}
+            in_run {print}
+          ' "${wf_file}" | sed 's/^          //' > "${script}"
+
+          if [ ! -s "${script}" ]; then
+            echo "::error::未能从 ${WF}.yml 抽出 'clone origin and apply patches' 步骤，请确认该步骤名称与 run 缩进未变"
+            exit 1
+          fi
+
+          # 还原 Actions 表达式（用拼接写，避免这里的 ${{ }} 被 Actions 提前求值）
+          open_expr="$(printf '%s' '$' '{' '{')"
+          close_expr="$(printf '%s' '}' '}')"
+          sed -i.bak \
+            -e "s|${open_expr} github.event.inputs.version ${close_expr}|${VERSION}|g" \
+            -e "s|${open_expr} github.workspace ${close_expr}|${GITHUB_WORKSPACE}|g" \
+            "${script}"
+          rm -f "${script}.bak"
+
+          echo "==================== ${WF}.yml :: clone origin and apply patches ===================="
+          cat "${script}"
+          echo "===================================================================================="
+
+          bash -e "${script}"
+
+          echo "==================== 重放后的变更 ===================="
+          rc=0
+          found=0
+          # 所有仓库都 clone 到 fork checkout 的 siyuan-note/ 下面（与 release workflow 的实际布局一致）
+          for repo in "${GITHUB_WORKSPACE}/siyuan-note"/*/; do
+            [ -d "${repo}.git" ] || continue
+            found=$((found + 1))
+            echo "--- ${repo} ---"
+            git -C "${repo}" status --porcelain
+            if [ -z "$(git -C "${repo}" status --porcelain)" ]; then
+              echo "::error::${repo} 重放后工作区无任何变更：patch 被静默跳过或锚点已失效"
+              rc=1
+            fi
+          done
+
+          if [ "${found}" -eq 0 ]; then
+            echo "::error::没有发现任何被克隆的仓库，patch 步骤可能被改写"
+            rc=1
+          fi
+
+          if [ "${rc}" -ne 0 ]; then
+            echo "::error::${VERSION} 的 patch 预检失败：发版会在此之前失败，请先修复 patches/ 或 workflow 中的条件分支"
+          else
+            echo "${VERSION} 的 patch 预检通过（${found} 个仓库均有变更）"
+          fi
+          exit "${rc}"
