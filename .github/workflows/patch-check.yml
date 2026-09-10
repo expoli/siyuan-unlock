@@ -94,7 +94,7 @@ jobs:
             exit 1
           fi
 
-          # 还原 Actions 表达式（用拼接写，避免这里的 ${{ }} 被 Actions 提前求值）
+          # 还原 Actions 表达式（用字符拼接写，避免被 Actions 提前求值）
           open_expr="$(printf '%s' '$' '{' '{')"
           close_expr="$(printf '%s' '}' '}')"
           sed -i.bak \
