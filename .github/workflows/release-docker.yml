@@ -8,22 +8,52 @@ on:
         required: true
 
 jobs:
+  credentials:
+    name: check docker credentials
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check Docker Hub credentials
+        id: check
+        shell: bash
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PWD: ${{ secrets.DOCKER_HUB_PWD }}
+        run: |
+          if [[ -n "${DOCKER_HUB_USER}" && -n "${DOCKER_HUB_PWD}" ]]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "enabled=false" >> "${GITHUB_OUTPUT}"
+          echo "::notice::Skipping the Docker image build: DOCKER_HUB_USER and DOCKER_HUB_PWD are not configured in this repository."
+
   build:
     name: build
     runs-on: ubuntu-latest
+    needs: credentials
+    if: needs.credentials.outputs.enabled == 'true'
 
     permissions:
       packages: write
       contents: read
 
     steps:
-      - name: Verify official repository
+      - name: Verify release repository
         shell: bash
         env:
           OFFICIAL_BUILD_MARKER: ${{ secrets.SIYUAN_UNLOCK_OFFICIAL_BUILD }}
+          OFFICIAL_REPOSITORY: appdev/siyuan-unlock
+          RELEASE_REPOSITORIES: appdev/siyuan-unlock expoli/siyuan-unlock
         run: |
-          if [[ "${GITHUB_REPOSITORY}" != "appdev/siyuan-unlock" || -z "${OFFICIAL_BUILD_MARKER}" ]]; then
-            echo "::error::This release workflow can only run in the official repository."
+          if [[ " ${RELEASE_REPOSITORIES} " != *" ${GITHUB_REPOSITORY} "* ]]; then
+            echo "::error::This release workflow can only run in: ${RELEASE_REPOSITORIES}."
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REPOSITORY}" == "${OFFICIAL_REPOSITORY}" && -z "${OFFICIAL_BUILD_MARKER}" ]]; then
+            echo "::error::Official releases require the SIYUAN_UNLOCK_OFFICIAL_BUILD marker secret."
             exit 1
           fi
 

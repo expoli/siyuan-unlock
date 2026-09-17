@@ -21,13 +21,20 @@ jobs:
             target: "ios"
 
     steps:
-      - name: Verify official repository
+      - name: Verify release repository
         shell: bash
         env:
           OFFICIAL_BUILD_MARKER: ${{ secrets.SIYUAN_UNLOCK_OFFICIAL_BUILD }}
+          OFFICIAL_REPOSITORY: appdev/siyuan-unlock
+          RELEASE_REPOSITORIES: appdev/siyuan-unlock expoli/siyuan-unlock
         run: |
-          if [[ "${GITHUB_REPOSITORY}" != "appdev/siyuan-unlock" || -z "${OFFICIAL_BUILD_MARKER}" ]]; then
-            echo "::error::This release workflow can only run in the official repository."
+          if [[ " ${RELEASE_REPOSITORIES} " != *" ${GITHUB_REPOSITORY} "* ]]; then
+            echo "::error::This release workflow can only run in: ${RELEASE_REPOSITORIES}."
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REPOSITORY}" == "${OFFICIAL_REPOSITORY}" && -z "${OFFICIAL_BUILD_MARKER}" ]]; then
+            echo "::error::Official releases require the SIYUAN_UNLOCK_OFFICIAL_BUILD marker secret."
             exit 1
           fi
 

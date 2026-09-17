@@ -5,16 +5,47 @@ on:
     types: [published]
 
 jobs:
+  credentials:
+    name: check AUR credentials
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check AUR credentials
+        id: check
+        shell: bash
+        env:
+          AUR_USERNAME: ${{ secrets.AUR_USERNAME }}
+          AUR_EMAIL: ${{ secrets.AUR_EMAIL }}
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          if [[ -n "${AUR_USERNAME}" && -n "${AUR_EMAIL}" && -n "${AUR_SSH_PRIVATE_KEY}" ]]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "enabled=false" >> "${GITHUB_OUTPUT}"
+          echo "::notice::Skipping the AUR upload: AUR_USERNAME, AUR_EMAIL and AUR_SSH_PRIVATE_KEY are not configured in this repository."
+
   build:
     runs-on: ubuntu-latest
+    needs: credentials
+    if: needs.credentials.outputs.enabled == 'true'
     steps:
-      - name: Verify official repository
+      - name: Verify release repository
         shell: bash
         env:
           OFFICIAL_BUILD_MARKER: ${{ secrets.SIYUAN_UNLOCK_OFFICIAL_BUILD }}
+          OFFICIAL_REPOSITORY: appdev/siyuan-unlock
+          RELEASE_REPOSITORIES: appdev/siyuan-unlock expoli/siyuan-unlock
         run: |
-          if [[ "${GITHUB_REPOSITORY}" != "appdev/siyuan-unlock" || -z "${OFFICIAL_BUILD_MARKER}" ]]; then
-            echo "::error::This release workflow can only run in the official repository."
+          if [[ " ${RELEASE_REPOSITORIES} " != *" ${GITHUB_REPOSITORY} "* ]]; then
+            echo "::error::This release workflow can only run in: ${RELEASE_REPOSITORIES}."
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REPOSITORY}" == "${OFFICIAL_REPOSITORY}" && -z "${OFFICIAL_BUILD_MARKER}" ]]; then
+            echo "::error::Official releases require the SIYUAN_UNLOCK_OFFICIAL_BUILD marker secret."
             exit 1
           fi
 
