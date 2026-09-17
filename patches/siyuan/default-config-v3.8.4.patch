@@ -1,0 +1,45 @@
+diff --git forkSrcPrefix/app/src/config/entryVisibility/catalog.ts forkDstPrefix/app/src/config/entryVisibility/catalog.ts
+index 2efa06f..eb88c83 100644
+--- forkSrcPrefix/app/src/config/entryVisibility/catalog.ts
++++ forkDstPrefix/app/src/config/entryVisibility/catalog.ts
+@@ -619,8 +619,8 @@ const topBarBuiltinChildren = [
+     node("barBack", lang("goBack")),
+     node("barForward", lang("goForward")),
+     fixed("drag", lang("entryTopBarDrag")),
+-    node("toolbarVIP", lang("accountDisplayVIP")),
+-    node("toolbarTitle", lang("accountDisplayTitle")),
++    node("toolbarVIP", lang("accountDisplayVIP"), true, undefined, undefined, {defaultVisible: () => false}),
++    node("toolbarTitle", lang("accountDisplayTitle"), true, undefined, undefined, {defaultVisible: () => false}),
+     node("barPlugins", lang("plugin")),
+     node("barCommand", lang("commandPanel")),
+     node("barSearch", lang("globalSearch")),
+diff --git forkSrcPrefix/kernel/conf/appearance.go forkDstPrefix/kernel/conf/appearance.go
+index 6c79d4d..0ff0a64 100644
+--- forkSrcPrefix/kernel/conf/appearance.go
++++ forkDstPrefix/kernel/conf/appearance.go
+@@ -64,8 +64,8 @@ func NewAppearance() *Appearance {
+ 		Icon:                "litheness",
+ 		CodeBlockThemeLight: "github",
+ 		CodeBlockThemeDark:  "base16/dracula",
+-		Lang:                "en",
+-		CloseButtonBehavior: 0,
++		Lang:                "zh_CN",
++		CloseButtonBehavior: 1,
+ 		HideToolbar:         true,
+ 		HideStatusBar:       false,
+ 		StatusBar:           util.NewStatusBar(util.IsMobileContainer()),
+diff --git forkSrcPrefix/kernel/conf/sync.go forkDstPrefix/kernel/conf/sync.go
+index 2fdeb79..3156dad 100644
+--- forkSrcPrefix/kernel/conf/sync.go
++++ forkDstPrefix/kernel/conf/sync.go
+@@ -39,8 +39,8 @@ func NewSync() *Sync {
+ 		Enabled:             false,
+ 		Perception:          false,
+ 		Mode:                1,
+-		GenerateConflictDoc: false,
+-		Provider:            ProviderSiYuan,
++		GenerateConflictDoc: true,
++		Provider:            ProviderS3,
+ 		Interval:            30,
+ 		LAN:                 &LANSync{MaxConcurrentReqs: 16},
+ 	}
